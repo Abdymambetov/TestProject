@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from main.models import Product
-from main.serializers import ProductSerializers
+from main.serializers import ProductSerializers, ProductValidateSerializer
 # Create your views here.
 
 
@@ -13,15 +13,21 @@ def products_view(request):
     if request.method == 'GET':
         products = Product.objects.all()
         # list_ = [model_to_dict(product) for product in products]
-        serializer = ProductSerializers(products, many=True)
+        serializer = ProductSerializers(instance=products, many=True)
         return Response(data=serializer.data)
     elif request.method == 'POST':
+        serializer = ProductValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'error': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST) 
+        # or status.HTTP_406_NOT_ACCEPTABLE
+
         #1) Get data from body
-        title = request.data.get('title')
-        price = request.data.get('price')
-        amount = request.data.get('quantity')
-        category_id = request.data.get('category_id')
-        tags = request.data.get('tags')
+        title = serializer.validated_data.get('title')
+        price = serializer.validated_data.get('price')
+        amount = serializer.validated_data.get('quantity')
+        category_id = serializer.validated_data.get('category_id')
+        tags = serializer.validated_data.get('tags')
         #2) Create product by this data
         product = Product.objects.create(
             title=title,
@@ -52,6 +58,9 @@ def product_detail_view(request, id):
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     elif request.method == 'PUT':
+        serializer = ProductValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
         #1) Get data from body
         title = request.data.get('title')
         price = request.data.get('price')
@@ -86,6 +95,8 @@ def test_view(request):
         'list': [1,2,3,4, 'Beka']
     }
     return Response(data=dict_)
+
+
 
 
 
