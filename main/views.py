@@ -10,6 +10,7 @@ from main.serializers import ProductSerializers, ProductValidateSerializer
 
 @api_view(['GET', 'POST'])
 def products_view(request):
+    print(request.user)
     if request.method == 'GET':
         products = Product.objects.all()
         # list_ = [model_to_dict(product) for product in products]
