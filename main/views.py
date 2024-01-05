@@ -3,9 +3,80 @@ from django.forms import model_to_dict
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from main.models import Product
-from main.serializers import ProductSerializers, ProductValidateSerializer
+from main.models import Product, Category, Tag
+from main.serializers import ProductSerializers, ProductValidateSerializer, CategorySerializers, TagSerializers
+from rest_framework.generics import ListAPIView, ListCreateAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.viewsets import ModelViewSet
 # Create your views here.
+
+
+
+class TagModelViewSet(ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializers
+    lookup_field = 'id'
+
+
+
+class CategoryListAPIView(ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializers
+    pagination_class = PageNumberPagination
+
+    # def list(self, request, *args, **kwargs):
+    #     return super().list(request, *args, **kwargs)
+    
+    # def create(self, request, *args, **kwargs):
+    #     return super().create(request, *args, **kwargs)
+
+
+
+class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializers
+    lookup_field = 'id'
+
+    # def update(self, request, *args, **kwargs):
+    #     return super().update(request, *args, **kwargs)
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     return super().retrieve(request, *args, **kwargs)
+
+    # def destroy(self, request, *args, **kwargs):
+    #     return super().destroy(request, *args, **kwargs)
+
+
+
+class ProductListCreateAPIView(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializers
+
+    def create(self, request, *args, **kwargs):
+        serializer = ProductValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'error': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST) 
+        # or status.HTTP_406_NOT_ACCEPTABLE
+
+        #1) Get data from body
+        title = serializer.validated_data.get('title')
+        price = serializer.validated_data.get('price')
+        amount = serializer.validated_data.get('quantity')
+        category_id = serializer.validated_data.get('category_id')
+        tags = serializer.validated_data.get('tags')
+        #2) Create product by this data
+        product = Product.objects.create(
+            title=title,
+            price=price,
+            quantity=amount,
+            category_id=category_id,
+        )
+        product.tags.set(tags)
+        product.save()
+        return Response(data=ProductSerializers(product).data,
+                        status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['GET', 'POST'])

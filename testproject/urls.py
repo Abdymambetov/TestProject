@@ -15,11 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from main.views import test_view, products_view, product_detail_view
+from main.views import test_view, products_view, product_detail_view, CategoryListAPIView, CategoryDetailAPIView, TagModelViewSet
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/test/', test_view),
     path('api/v1/products/', products_view),
     path('api/v1/products/<int:id>/', product_detail_view),
-    path('api/v1/users/', include('users.urls'))
+    path('api/v1/users/', include('users.urls')),
+    path('api/v1/categories/', CategoryListAPIView.as_view()),
+    path('api/v1/categories/<int:id>/', CategoryDetailAPIView.as_view()),
+    path('api/v1/tags/', TagModelViewSet.as_view({
+        'get': 'list', 'post': 'create'
+    })),
+    path('api/v1/tags/<int:id>/', TagModelViewSet.as_view({
+        'get': 'retrieve', 'put': 'update', 'delete': 'destroy'
+    }))
 ]

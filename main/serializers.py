@@ -4,6 +4,11 @@ from rest_framework.exceptions import ValidationError
 
 
 
+class TagSerializers(serializers.ModelSerializer):
+    class Meta:
+        model= Tag
+        fields = 'id name'.split()
+
 class CategorySerializers(serializers.ModelSerializer):
     class Meta:
         model= Category
