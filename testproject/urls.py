@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from main.views import test_view, products_view, product_detail_view, CategoryListAPIView, CategoryDetailAPIView, TagModelViewSet
+from . import swagger
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/test/', test_view),
@@ -31,3 +32,5 @@ urlpatterns = [
         'get': 'retrieve', 'put': 'update', 'delete': 'destroy'
     }))
 ]
+
+urlpatterns += swagger.urlpatterns
